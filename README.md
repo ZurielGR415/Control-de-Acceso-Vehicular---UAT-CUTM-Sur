@@ -1,4 +1,4 @@
-# 🚗 Sistema de Control de Acceso Vehicular - UAT CUTM Sur
+# Sistema de Control de Acceso Vehicular - UAT CUTM Sur
 
 > **Hackatón F1 UAT 2026**  
 > **Facultad de Ingeniería Tampico (FIT)** — Coordinación de Ingeniería en Sistemas Computacionales  
@@ -6,7 +6,7 @@
 
 ---
 
-## 👥 Equipo de Desarrollo: **Fasda**
+## Equipo de Desarrollo: **Fasda**
 * **Gomez Rubio Zuriel**
 * **Solis Hernandez Juan Abraham**
 * **Villanueva Ojeda Kevin Eduardo**
@@ -15,18 +15,18 @@
 
 ---
 
-## 🌐 Enlaces Oficiales del Sistema en Producción
+## Enlaces Oficiales del Sistema en Producción
 
 | Recurso | Enlace Directo |
 | :--- | :--- |
-| **🚀 Aplicación Web (En vivo)** | [Abrir Web App para Casetas](https://script.google.com/macros/s/AKfycbynEHUNdMW5zOvsQpWhwsfhGSbF2kyxQ4hSPc0hQbFjAka-QsP4Ea-Ie-LiXugXOJ2Z/exec) |
-| **📊 Base de Datos (Google Sheets)** | [Ver Hoja Centralizada y Sincronizada](https://docs.google.com/spreadsheets/d/18C_fMdlyGVHQXlRMPAzkbEreKkE2m-G0tqCXpY4H9s0/edit?gid=1038250222#gid=1038250222) |
-| **📱 Aplicación Móvil (Google AppSheet)** | [Abrir AppSheet Móvil](https://www.appsheet.com/start/62277981-8f14-48f0-8e2c-8f4841255807) |
-| **⚙️ Editor del Backend (Apps Script)** | [Ver Proyecto Google Apps Script](https://script.google.com/u/0/home/projects/1rxk8Pr4bZ0oSCyjATW0z2Psbh_UFRdGXT8NTk2mmUm-Q2ZWGt5RCgt5z/edit) |
+| **Aplicación Web (En vivo)** | [Abrir Web App para Casetas](https://script.google.com/macros/s/AKfycbynEHUNdMW5zOvsQpWhwsfhGSbF2kyxQ4hSPc0hQbFjAka-QsP4Ea-Ie-LiXugXOJ2Z/exec) |
+| **Base de Datos (Google Sheets)** | [Ver Hoja Centralizada y Sincronizada](https://docs.google.com/spreadsheets/d/18C_fMdlyGVHQXlRMPAzkbEreKkE2m-G0tqCXpY4H9s0/edit?gid=1038250222#gid=1038250222) |
+| **Aplicación Móvil (Google AppSheet)** | [Abrir AppSheet Móvil](https://www.appsheet.com/start/62277981-8f14-48f0-8e2c-8f4841255807) |
+| **Editor del Backend (Apps Script)** | [Ver Proyecto Google Apps Script](https://script.google.com/u/0/home/projects/1rxk8Pr4bZ0oSCyjATW0z2Psbh_UFRdGXT8NTk2mmUm-Q2ZWGt5RCgt5z/edit) |
 
 ---
 
-## 📌 Descripción del Proyecto
+## Descripción del Proyecto
 
 El **Sistema de Control de Acceso Vehicular para la UAT CUTM Sur** digitaliza y automatiza el registro de accesos en las tres casetas del Campus Universitario Sur:
 1. **Caseta 1 (Principal):** Boulevard Adolfo López Mateos.
@@ -37,14 +37,14 @@ Sustituye por completo el uso de libretas de papel tradicionales, reduciendo el 
 
 ---
 
-## 📁 Archivos del Código Fuente
+## Archivos del Código Fuente
 
 * **`Code.gs`**: Backend en Google Apps Script (APIs de persistencia, control de concurrencia, validación de placas, reportes y bitácora de auditoría).
 * **`Index.html`**: Frontend responsivo completo (HTML5, TailwindCSS, Chart.js, SweetAlert2) con el diseño y paleta institucional de la UAT.
 
 ---
 
-## 🚀 Guía de Despliegue en Google Workspace
+## Guía de Despliegue en Google Workspace
 
 1. **Crear Hoja de Cálculo en Google Sheets:**
    * Entra a [Google Drive](https://drive.google.com) y crea una nueva hoja de cálculo titulada `Control de Acceso Vehicular - UAT CUTM Sur`.
@@ -63,6 +63,6 @@ Sustituye por completo el uso de libretas de papel tradicionales, reduciendo el 
 
 ---
 
-## 📄 Licencia
+## Licencia
 Proyecto desarrollado con fines académicos para el **Hackatón F1 UAT 2026** por el equipo **Fasda**.
 Distribuido bajo la Licencia MIT.
