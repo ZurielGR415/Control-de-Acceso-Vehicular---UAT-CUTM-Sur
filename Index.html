@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Sistema de Control de Acceso Vehicular - UAT CUTM Sur</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Bootstrap 5 CSS & FontAwesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    :root {
+      --uat-blue: #0b3b60;
+      --uat-blue-dark: #07253d;
+      --uat-orange: #f26f21;
+      --uat-orange-hover: #d95a10;
+      --uat-light: #f4f7f6;
+    }
+
+    body {
+      background-color: var(--uat-light);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #333;
+    }
+
+    .navbar-uat {
+      background: linear-gradient(135deg, var(--uat-blue-dark) 0%, var(--uat-blue) 100%);
+      border-bottom: 4px solid var(--uat-orange);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .nav-tabs .nav-link {
+      color: var(--uat-blue);
+      font-weight: 600;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 0.85rem 1.25rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-tabs .nav-link:hover {
+      color: var(--uat-orange);
+      background-color: rgba(242, 111, 33, 0.05);
+    }
+
+    .nav-tabs .nav-link.active {
+      color: var(--uat-orange);
+      border-bottom: 3px solid var(--uat-orange);
+      background-color: transparent;
+    }
+
+    .card-kpi {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      transition: transform 0.2s ease;
+    }
+
+    .card-kpi:hover {
+      transform: translateY(-3px);
+    }
+
+    .btn-uat-primary {
+      background-color: var(--uat-orange);
+      border-color: var(--uat-orange);
+      color: #ffffff;
+      font-weight: 700;
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
+    }
+
+    .btn-uat-primary:hover {
+      background-color: var(--uat-orange-hover);
+      border-color: var(--uat-orange-hover);
+      color: #ffffff;
+    }
+
+    .btn-uat-dark {
+      background-color: var(--uat-blue);
+      border-color: var(--uat-blue);
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .btn-uat-dark:hover {
+      background-color: var(--uat-blue-dark);
+      border-color: var(--uat-blue-dark);
+      color: #ffffff;
+    }
+
+    .badge-estudiante { background-color: #0d6efd; }
+    .badge-docente { background-color: #198754; }
+    .badge-administrativo { background-color: #6f42c1; }
+    .badge-visitante { background-color: #fd7e14; }
+
+    .caseta-selector {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      font-weight: 600;
+    }
+
+    .plate-input {
+      font-size: 1.8rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      font-weight: 800;
+      text-align: center;
+      border: 2px solid var(--uat-blue);
+      border-radius: 8px;
+    }
+
+    .pulse-online {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background-color: #28a745;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #28a745;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra de Navegación Superior -->
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-uat py-3">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand d-flex align-items-center" href="#">
+        <div class="bg-white text-primary rounded p-2 me-2 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+          <i class="fa-solid fa-graduation-cap fa-lg" style="color: var(--uat-blue);"></i>
+        </div>
+        <div>
+          <div class="fw-bold fs-5 mb-0">UAT CUTM SUR</div>
+          <small class="text-white-50" style="font-size: 0.75rem;">Control de Acceso Vehicular - F1 Tampico</small>
+        </div>
+      </a>
+
+      <!-- Selector de Caseta Activa -->
+      <div class="d-flex align-items-center gap-3 ms-auto">
+        <div class="text-white text-end d-none d-md-block">
+          <small class="d-block text-white-50">Caseta en Operación:</small>
+          <select id="selectCasetaGlobal" class="form-select form-select-sm caseta-selector" onchange="cambiarCasetaActiva()">
+            <option value="CAS-01" selected>Caseta 1 (Principal - Blv. López Mateos)</option>
+            <option value="CAS-02">Caseta 2 (Acceso Norte - Estadio)</option>
+            <option value="CAS-03">Caseta 3 (Acceso Sur - Deportivo)</option>
+          </select>
+        </div>
+        <div class="text-white d-none d-lg-block text-end ps-3 border-start border-secondary">
+          <div class="small fw-bold" id="liveClock">00:00:00</div>
+          <small class="text-success"><span class="pulse-online"></span>En línea</small>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Contenedor Principal -->
+  <div class="container-fluid px-4 py-4">
+
+    <!-- Pestañas de Navegación -->
+    <ul class="nav nav-tabs mb-4 bg-white rounded shadow-sm px-2 pt-2" id="mainTabs" role="tablist">
+      <li class="nav-item">
+        <button class="nav-link active" id="operacion-tab" data-bs-toggle="tab" data-bs-target="#tab-operacion" type="button">
+          <i class="fa-solid fa-id-card-clip me-2"></i>Operación de Casetas
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="consultas-tab" data-bs-toggle="tab" data-bs-target="#tab-consultas" type="button" onclick="cargarHistorial()">
+          <i class="fa-solid fa-magnifying-glass me-2"></i>Consultas y Filtros
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="reportes-tab" data-bs-toggle="tab" data-bs-target="#tab-reportes" type="button" onclick="cargarMetricas()">
+          <i class="fa-solid fa-chart-pie me-2"></i>Dashboard y Reportes
+        </button>
+      </li>
+      <li class="nav-item ms-auto pe-2 d-flex align-items-center">
+        <button class="btn btn-sm btn-outline-secondary" onclick="inicializarBD()">
+          <i class="fa-solid fa-database me-1"></i>Inicializar BD
+        </button>
+      </li>
+    </ul>
+
+    <!-- Contenido de Pestañas -->
+    <div class="tab-content" id="mainTabsContent">
+
+      <!-- ================== PESTAÑA 1: OPERACIÓN EN CASETA ================== -->
+      <div class="tab-pane fade show active" id="tab-operacion">
+        <div class="row g-4">
+          
+          <!-- Columna Izquierda: Formulario de Entrada Rápida -->
+          <div class="col-lg-5">
+            <div class="card shadow-sm border-0 rounded-3">
+              <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                <h5 class="mb-0 fw-bold text-primary">
+                  <i class="fa-solid fa-car-on text-warning me-2"></i>Registro de Entrada
+                </h5>
+                <span class="badge bg-primary" id="tagCasetaActual">Caseta 1</span>
+              </div>
+              <div class="card-body p-4">
+                
+                <div class="mb-3 text-center">
+                  <label class="form-label fw-bold text-muted small mb-1">PLACA DEL VEHÍCULO</label>
+                  <div class="input-group">
+                    <input type="text" id="inputPlaca" class="form-control plate-input" placeholder="ABC-123" maxlength="10" oninput="normalizarPlaca(this)">
+                    <button class="btn btn-uat-dark px-3" type="button" onclick="buscarPlacaEnCatalogo()" title="Buscar en catálogo">
+                      <i class="fa-solid fa-search fa-lg"></i>
+                    </button>
+                  </div>
+                  <small class="text-muted">Presiona Enter o el icono de lupa para autocompletar</small>
+                </div>
+
+                <!-- Tarjeta de Validación Instantánea -->
+                <div id="cardResultadoBusqueda" class="alert alert-secondary py-2 px-3 mb-3 d-none">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <strong id="lblNombreConductor" class="d-block text-dark">Nombre</strong>
+                      <small id="lblDetalleVehiculo" class="text-muted">Modelo / Facultad</small>
+                    </div>
+                    <span id="badgeTipoUsuario" class="badge bg-secondary">Tipo</span>
+                  </div>
+                </div>
+
+                <div class="row g-2 mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label small fw-bold">Tipo de Usuario:</label>
+                    <select id="selectTipoUsuario" class="form-select">
+                      <option value="Estudiante">Estudiante</option>
+                      <option value="Docente">Docente</option>
+                      <option value="Administrativo">Administrativo</option>
+                      <option value="Visitante" selected>Visitante</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label small fw-bold">Nombre del Conductor:</label>
+                    <input type="text" id="inputConductor" class="form-control" placeholder="Nombre completo">
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label small fw-bold">Observaciones / Motivo de Visita:</label>
+                  <input type="text" id="inputObservaciones" class="form-control" placeholder="Ej. Visita a Dirección F1, Auditorio, etc.">
+                </div>
+
+                <button class="btn btn-uat-primary w-100 py-3 fs-5 shadow" onclick="ejecutarRegistroEntrada()">
+                  <i class="fa-solid fa-check-circle me-2"></i>REGISTRAR ENTRADA
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna Derecha: Vehículos Actualmente Dentro (Salida Rápida en 1 Clic) -->
+          <div class="col-lg-7">
+            <div class="card shadow-sm border-0 rounded-3">
+              <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                <div>
+                  <h5 class="mb-0 fw-bold text-dark">
+                    <i class="fa-solid fa-square-parking text-success me-2"></i>Vehículos en Campus (Pendientes de Salida)
+                  </h5>
+                  <small class="text-muted">Permite marcar la salida en 1 segundo calculando el tiempo de estancia</small>
+                </div>
+                <button class="btn btn-sm btn-outline-primary" onclick="cargarVehiculosDentro()">
+                  <i class="fa-solid fa-rotate me-1"></i>Actualizar
+                </button>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 480px;">
+                  <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light sticky-top">
+                      <tr>
+                        <th>Placas</th>
+                        <th>Tipo / Conductor</th>
+                        <th>Caseta Entrada</th>
+                        <th>Hora Entrada</th>
+                        <th>Tiempo</th>
+                        <th class="text-center">Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbodyVehiculosDentro">
+                      <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">
+                          <i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando vehículos activos...
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ================== PESTAÑA 2: CONSULTAS Y FILTROS ================== -->
+      <div class="tab-pane fade" id="tab-consultas">
+        <div class="card shadow-sm border-0 rounded-3 mb-4">
+          <div class="card-body p-4">
+            <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-filter me-2"></i>Filtros de Búsqueda Avanzada</h5>
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label small fw-bold">Buscar por Placa:</label>
+                <input type="text" id="filtroPlaca" class="form-control" placeholder="Ej. ABC123">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-bold">Fecha Desde:</label>
+                <input type="date" id="filtroFechaDesde" class="form-control">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-bold">Fecha Hasta:</label>
+                <input type="date" id="filtroFechaHasta" class="form-control">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small fw-bold">Caseta de Acceso:</label>
+                <select id="filtroCaseta" class="form-select">
+                  <option value="TODAS">Todas las casetas</option>
+                  <option value="CAS-01">Caseta 1 (Principal)</option>
+                  <option value="CAS-02">Caseta 2 (Norte)</option>
+                  <option value="CAS-03">Caseta 3 (Sur)</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-bold">Tipo de Usuario:</label>
+                <select id="filtroTipoUsuario" class="form-select">
+                  <option value="TODOS">Todos los usuarios</option>
+                  <option value="Estudiante">Estudiante</option>
+                  <option value="Docente">Docente</option>
+                  <option value="Administrativo">Administrativo</option>
+                  <option value="Visitante">Visitante</option>
+                </select>
+              </div>
+            </div>
+            <div class="d-flex justify-content-end gap-2 mt-3">
+              <button class="btn btn-outline-secondary" onclick="limpiarFiltros()">Limpiar</button>
+              <button class="btn btn-uat-dark px-4" onclick="ejecutarFiltroConsultas()">
+                <i class="fa-solid fa-magnifying-glass me-1"></i>Buscar Registros
+              </button>
+              <button class="btn btn-success px-3" onclick="exportarTablaACSV()">
+                <i class="fa-solid fa-file-excel me-1"></i>Exportar a Excel (CSV)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de Historial -->
+        <div class="card shadow-sm border-0 rounded-3">
+          <div class="card-body p-0">
+            <div class="table-responsive" style="max-height: 520px;">
+              <table class="table table-striped table-hover align-middle mb-0" id="tablaHistorial">
+                <thead class="table-dark sticky-top">
+                  <tr>
+                    <th>Folio</th>
+                    <th>Placas</th>
+                    <th>Tipo</th>
+                    <th>Conductor</th>
+                    <th>Caseta In</th>
+                    <th>Hora Entrada</th>
+                    <th>Caseta Out</th>
+                    <th>Hora Salida</th>
+                    <th>Estancia</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyHistorial">
+                  <tr>
+                    <td colspan="10" class="text-center py-4 text-muted">Aplica filtros o presiona buscar para listar el historial.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================== PESTAÑA 3: DASHBOARD Y REPORTES ================== -->
+      <div class="tab-pane fade" id="tab-reportes">
+        
+        <!-- KPI Cards -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-3">
+            <div class="card card-kpi p-3 bg-white border-start border-4 border-primary">
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <small class="text-muted fw-bold">VEHÍCULOS DENTRO AHORA</small>
+                  <h2 class="fw-bold mb-0 text-primary" id="kpiDentro">0</h2>
+                </div>
+                <i class="fa-solid fa-car-side fa-2x text-primary opacity-50"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card card-kpi p-3 bg-white border-start border-4 border-success">
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <small class="text-muted fw-bold">INGRESOS DE HOY</small>
+                  <h2 class="fw-bold mb-0 text-success" id="kpiHoy">0</h2>
+                </div>
+                <i class="fa-solid fa-calendar-day fa-2x text-success opacity-50"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card card-kpi p-3 bg-white border-start border-4 border-warning">
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <small class="text-muted fw-bold">CASETA MÁS CONCURRIDA</small>
+                  <h4 class="fw-bold mb-0 text-warning" id="kpiCasetaTop">Caseta 1</h4>
+                </div>
+                <i class="fa-solid fa-road-barrier fa-2x text-warning opacity-50"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card card-kpi p-3 bg-white border-start border-4 border-info">
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <small class="text-muted fw-bold">TIEMPO PROMEDIO ESTANCIA</small>
+                  <h3 class="fw-bold mb-0 text-info">3.8 hrs</h3>
+                </div>
+                <i class="fa-solid fa-stopwatch fa-2x text-info opacity-50"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráficos Estadísticos -->
+        <div class="row g-4 mb-4">
+          <!-- Histograma de Horas Pico -->
+          <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-3 p-3">
+              <h6 class="fw-bold text-dark mb-3">
+                <i class="fa-solid fa-chart-column me-2 text-primary"></i>Horarios de Mayor Afluencia (Picos de Tráfico)
+              </h6>
+              <div style="height: 280px;">
+                <canvas id="chartHoras"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Distribución por Tipo de Usuario -->
+          <div class="col-lg-4">
+            <div class="card shadow-sm border-0 rounded-3 p-3">
+              <h6 class="fw-bold text-dark mb-3">
+                <i class="fa-solid fa-chart-pie me-2 text-warning"></i>Accesos por Tipo de Usuario
+              </h6>
+              <div style="height: 280px;" class="d-flex align-items-center justify-content-center">
+                <canvas id="chartUsuarios"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila Inferior: Top Vehículos Frecuentes y Tráfico por Caseta -->
+        <div class="row g-4">
+          <div class="col-lg-6">
+            <div class="card shadow-sm border-0 rounded-3 p-3">
+              <h6 class="fw-bold text-dark mb-3">
+                <i class="fa-solid fa-chart-bar me-2 text-success"></i>Afluencia por Caseta de Acceso
+              </h6>
+              <div style="height: 240px;">
+                <canvas id="chartCasetas"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6">
+            <div class="card shadow-sm border-0 rounded-3 p-3">
+              <h6 class="fw-bold text-dark mb-3">
+                <i class="fa-solid fa-trophy me-2 text-warning"></i>Vehículos Más Frecuentes
+              </h6>
+              <ul class="list-group list-group-flush" id="listaMasFrecuentes">
+                <li class="list-group-item text-muted">Cargando datos...</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Script de Frontend / Conexión con Apps Script -->
+  <script>
+    let chartHorasInstancia = null;
+    let chartUsuariosInstancia = null;
+    let chartCasetasInstancia = null;
+
+    // Reloj en tiempo real
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('liveClock').textContent = now.toLocaleTimeString('es-MX');
+    }, 1000);
+
+    // Inicialización al cargar la página
+    document.addEventListener("DOMContentLoaded", () => {
+      cambiarCasetaActiva();
+      cargarVehiculosDentro();
+
+      // Permitir presionar Enter en el input de placas
+      document.getElementById('inputPlaca').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          buscarPlacaEnCatalogo();
+        }
+      });
+    });
+
+    function normalizarPlaca(el) {
+      el.value = el.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+    }
+
+    function cambiarCasetaActiva() {
+      const select = document.getElementById('selectCasetaGlobal');
+      const textoCaseta = select.options[select.selectedIndex].text;
+      document.getElementById('tagCasetaActual').textContent = select.value + " (" + textoCaseta.split('-')[0].trim() + ")";
+    }
+
+    // Búsqueda en catálogo de vehículos autorizados
+    function buscarPlacaEnCatalogo() {
+      const placa = document.getElementById('inputPlaca').value.trim();
+      if (!placa) {
+        Swal.fire('Atención', 'Ingrese una placa para consultar.', 'warning');
+        return;
+      }
+
+      // Si se ejecuta en Apps Script
+      if (typeof google !== "undefined" && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(procesarBusquedaPlaca)
+          .withFailureHandler(err => Swal.fire('Error', err.message, 'error'))
+          .buscarVehiculoPorPlaca(placa);
+      } else {
+        // Modo simulado para pruebas locales en navegador
+        simularBusquedaPlaca(placa);
+      }
+    }
+
+    function procesarBusquedaPlaca(res) {
+      const card = document.getElementById('cardResultadoBusqueda');
+      card.classList.remove('d-none');
+
+      if (res.encontrado) {
+        document.getElementById('lblNombreConductor').textContent = res.nombreCompleto;
+        document.getElementById('lblDetalleVehiculo').textContent = `${res.marcaModelo} - ${res.dependencia}`;
+        document.getElementById('badgeTipoUsuario').textContent = res.tipoUsuario;
+        document.getElementById('badgeTipoUsuario').className = `badge badge-${res.tipoUsuario.toLowerCase()}`;
+        
+        document.getElementById('selectTipoUsuario').value = res.tipoUsuario;
+        document.getElementById('inputConductor').value = res.nombreCompleto;
+      } else {
+        document.getElementById('lblNombreConductor').textContent = "Vehículo No Empadronado";
+        document.getElementById('lblDetalleVehiculo').textContent = "Registrar datos como visitante externo";
+        document.getElementById('badgeTipoUsuario').textContent = "Visitante";
+        document.getElementById('badgeTipoUsuario').className = "badge badge-visitante";
+
+        document.getElementById('selectTipoUsuario').value = "Visitante";
+      }
+    }
+
+    // Registrar Entrada
+    function ejecutarRegistroEntrada() {
+      const placas = document.getElementById('inputPlaca').value.trim();
+      if (!placas) {
+        Swal.fire('Atención', 'Ingrese la placa del vehículo.', 'warning');
+        return;
+      }
+
+      const datos = {
+        placas: placas,
+        tipoUsuario: document.getElementById('selectTipoUsuario').value,
+        nombreCompleto: document.getElementById('inputConductor').value.trim(),
+        idCaseta: document.getElementById('selectCasetaGlobal').value,
+        observaciones: document.getElementById('inputObservaciones').value.trim(),
+        vigilante: "Guardia Turno"
+      };
+
+      if (typeof google !== "undefined" && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res.exito) {
+              Swal.fire({
+                icon: 'success',
+                title: '¡Entrada Autorizada!',
+                text: res.mensaje,
+                timer: 2000,
+                showConfirmButton: false
+              });
+              limpiarFormularioEntrada();
+              cargarVehiculosDentro();
+            } else {
+              Swal.fire('Aviso', res.mensaje, 'warning');
+            }
+          })
+          .withFailureHandler(err => Swal.fire('Error', err.message, 'error'))
+          .registrarEntrada(datos);
+      } else {
+        Swal.fire('Simulación', `Entrada registrada exitosamente para placa ${placas}.`, 'success');
+        limpiarFormularioEntrada();
+      }
+    }
+
+    function limpiarFormularioEntrada() {
+      document.getElementById('inputPlaca').value = '';
+      document.getElementById('inputConductor').value = '';
+      document.getElementById('inputObservaciones').value = '';
+      document.getElementById('cardResultadoBusqueda').classList.add('d-none');
+    }
+
+    // Cargar vehículos que están dentro
+    function cargarVehiculosDentro() {
+      const caseta = document.getElementById('selectCasetaGlobal').value;
+
+      if (typeof google !== "undefined" && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(renderizarVehiculosDentro)
+          .withFailureHandler(err => console.error(err))
+          .obtenerVehiculosDentro("TODAS");
+      } else {
+        renderizarVehiculosDentro([
+          { idAcceso: 'ACC-001', placas: 'ABC-1234', tipoUsuario: 'Docente', conductor: 'Dr. Juan Pérez', casetaEntrada: 'CAS-01', horaEntrada: '07:30', minutosEstancia: 45 },
+          { idAcceso: 'ACC-002', placas: 'XYZ-9876', tipoUsuario: 'Estudiante', conductor: 'Mariana Torres', casetaEntrada: 'CAS-02', horaEntrada: '07:45', minutosEstancia: 30 }
+        ]);
+      }
+    }
+
+    function renderizarVehiculosDentro(lista) {
+      const tbody = document.getElementById('tbodyVehiculosDentro');
+      tbody.innerHTML = '';
+
+      if (!lista || lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No hay vehículos dentro del campus en este momento.</td></tr>';
+        return;
+      }
+
+      lista.forEach(v => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong class="text-primary">${v.placas}</strong></td>
+          <td>
+            <span class="badge badge-${v.tipoUsuario.toLowerCase()} me-1">${v.tipoUsuario}</span>
+            <small class="d-block text-muted">${v.conductor || 'Sin nombre'}</small>
+          </td>
+          <td><span class="badge bg-light text-dark border">${v.casetaEntrada}</span></td>
+          <td><small>${v.horaEntrada}</small></td>
+          <td><span class="badge bg-secondary">${v.minutosEstancia} min</span></td>
+          <td class="text-center">
+            <button class="btn btn-sm btn-danger px-3 shadow-sm" onclick="ejecutarSalida('${v.idAcceso}', '${v.placas}')" title="Marcar Salida">
+              <i class="fa-solid fa-arrow-right-from-bracket me-1"></i>Salida
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Registrar Salida en 1 clic
+    function ejecutarSalida(idAcceso, placa) {
+      const casetaSalida = document.getElementById('selectCasetaGlobal').value;
+
+      Swal.fire({
+        title: `¿Confirmar salida de ${placa}?`,
+        text: `Se registrará la salida por ${casetaSalida}.`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, registrar salida'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          if (typeof google !== "undefined" && google.script && google.script.run) {
+            google.script.run
+              .withSuccessHandler(res => {
+                if (res.exito) {
+                  Swal.fire('Salida Exitosa', res.mensaje, 'success');
+                  cargarVehiculosDentro();
+                } else {
+                  Swal.fire('Error', res.mensaje, 'error');
+                }
+              })
+              .registrarSalida(idAcceso, casetaSalida, "Guardia Turno", "Salida normal");
+          } else {
+            Swal.fire('Salida Exitosa', `Salida registrada para ${placa}.`, 'success');
+          }
+        }
+      });
+    }
+
+    // Consultas y Filtros
+    function cargarHistorial() {
+      ejecutarFiltroConsultas();
+    }
+
+    function ejecutarFiltroConsultas() {
+      const filtros = {
+        placas: document.getElementById('filtroPlaca').value,
+        fechaDesde: document.getElementById('filtroFechaDesde').value,
+        fechaHasta: document.getElementById('filtroFechaHasta').value,
+        caseta: document.getElementById('filtroCaseta').value,
+        tipoUsuario: document.getElementById('filtroTipoUsuario').value
+      };
+
+      if (typeof google !== "undefined" && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(renderizarHistorial)
+          .consultarHistorial(filtros);
+      } else {
+        renderizarHistorial([
+          { idAcceso: 'ACC-101', placas: 'ABC1234', tipoUsuario: 'Docente', conductor: 'Dr. Pérez', casetaEntrada: 'CAS-01', horaEntrada: '2026-11-20 07:15', casetaSalida: 'CAS-01', horaSalida: '12:30', minutos: 315, estado: 'CONCLUIDO' }
+        ]);
+      }
+    }
+
+    function renderizarHistorial(lista) {
+      const tbody = document.getElementById('tbodyHistorial');
+      tbody.innerHTML = '';
+
+      if (!lista || lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-muted">No se encontraron registros con los filtros seleccionados.</td></tr>';
+        return;
+      }
+
+      lista.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><small class="text-muted">${r.idAcceso}</small></td>
+          <td><strong>${r.placas}</strong></td>
+          <td><span class="badge badge-${r.tipoUsuario.toLowerCase()}">${r.tipoUsuario}</span></td>
+          <td><small>${r.conductor || '-'}</small></td>
+          <td><span class="badge bg-light text-dark">${r.casetaEntrada}</span></td>
+          <td><small>${r.horaEntrada}</small></td>
+          <td><span class="badge bg-light text-dark">${r.casetaSalida}</span></td>
+          <td><small>${r.horaSalida}</small></td>
+          <td><small>${r.minutos ? r.minutos + ' min' : '-'}</small></td>
+          <td><span class="badge ${r.estado === 'DENTRO' ? 'bg-warning text-dark' : 'bg-success'}">${r.estado}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function limpiarFiltros() {
+      document.getElementById('filtroPlaca').value = '';
+      document.getElementById('filtroFechaDesde').value = '';
+      document.getElementById('filtroFechaHasta').value = '';
+      document.getElementById('filtroCaseta').value = 'TODAS';
+      document.getElementById('filtroTipoUsuario').value = 'TODOS';
+      ejecutarFiltroConsultas();
+    }
+
+    function exportarTablaACSV() {
+      const tabla = document.getElementById('tablaHistorial');
+      let csv = [];
+      for (let i = 0; i < tabla.rows.length; i++) {
+        let fila = [];
+        for (let j = 0; j < tabla.rows[i].cells.length; j++) {
+          fila.push('"' + tabla.rows[i].cells[j].innerText.replace(/"/g, '""') + '"');
+        }
+        csv.push(fila.join(','));
+      }
+      const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `Reporte_Accesos_UAT_${new Date().toISOString().slice(0,10)}.csv`;
+      link.click();
+    }
+
+    // Dashboard y Gráficas
+    function cargarMetricas() {
+      if (typeof google !== "undefined" && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(actualizarGraficosDashboard)
+          .obtenerEstadisticas();
+      } else {
+        actualizarGraficosDashboard({
+          totalDentro: 42,
+          totalHoy: 185,
+          tipos: { Estudiante: 110, Docente: 45, Administrativo: 20, Visitante: 10 },
+          casetas: { "CAS-01": 95, "CAS-02": 55, "CAS-03": 35 },
+          horas: [0,0,0,0,0,0,15,65,40,20,15,10,35,45,25,15,10,20,10,5,0,0,0,0],
+          masFrecuentes: [{placa: 'ABC-1234', total: 18}, {placa: 'XYZ-9876', total: 15}]
+        });
+      }
+    }
+
+    function actualizarGraficosDashboard(data) {
+      if (!data) return;
+
+      document.getElementById('kpiDentro').textContent = data.totalDentro;
+      document.getElementById('kpiHoy').textContent = data.totalHoy;
+
+      // 1. Gráfica de Afluencia por Hora
+      const ctxHoras = document.getElementById('chartHoras').getContext('2d');
+      if (chartHorasInstancia) chartHorasInstancia.destroy();
+      chartHorasInstancia = new Chart(ctxHoras, {
+        type: 'bar',
+        data: {
+          labels: ['06h','07h','08h','09h','10h','11h','12h','13h','14h','15h','16h','17h','18h','19h','20h','21h'],
+          datasets: [{
+            label: 'Vehículos Ingresados',
+            data: data.horas.slice(6, 22),
+            backgroundColor: '#0b3b60',
+            borderRadius: 6
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+      // 2. Gráfica por Tipo de Usuario
+      const ctxUsuarios = document.getElementById('chartUsuarios').getContext('2d');
+      if (chartUsuariosInstancia) chartUsuariosInstancia.destroy();
+      chartUsuariosInstancia = new Chart(ctxUsuarios, {
+        type: 'doughnut',
+        data: {
+          labels: ['Estudiantes', 'Docentes', 'Administrativos', 'Visitantes'],
+          datasets: [{
+            data: [data.tipos.Estudiante || 0, data.tipos.Docente || 0, data.tipos.Administrativo || 0, data.tipos.Visitante || 0],
+            backgroundColor: ['#0d6efd', '#198754', '#6f42c1', '#f26f21']
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+      // 3. Gráfica por Caseta
+      const ctxCasetas = document.getElementById('chartCasetas').getContext('2d');
+      if (chartCasetasInstancia) chartCasetasInstancia.destroy();
+      chartCasetasInstancia = new Chart(ctxCasetas, {
+        type: 'bar',
+        data: {
+          labels: ['Caseta 1 (Principal)', 'Caseta 2 (Norte)', 'Caseta 3 (Sur)'],
+          datasets: [{
+            label: 'Accesos Registrados',
+            data: [data.casetas["CAS-01"] || 0, data.casetas["CAS-02"] || 0, data.casetas["CAS-03"] || 0],
+            backgroundColor: ['#f26f21', '#0b3b60', '#20c997']
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+      // 4. Lista de Vehículos Más Frecuentes
+      const listaFrec = document.getElementById('listaMasFrecuentes');
+      listaFrec.innerHTML = '';
+      if (data.masFrecuentes && data.masFrecuentes.length > 0) {
+        data.masFrecuentes.forEach((item, idx) => {
+          const li = document.createElement('li');
+          li.className = 'list-group-item d-flex justify-content-between align-items-center';
+          li.innerHTML = `
+            <span><strong>#${idx + 1}</strong> - Placa <span class="badge bg-dark">${item.placa}</span></span>
+            <span class="badge bg-primary rounded-pill">${item.total} ingresos</span>
+          `;
+          listaFrec.appendChild(li);
+        });
+      } else {
+        listaFrec.innerHTML = '<li class="list-group-item text-muted">Aún no hay suficientes datos históricos.</li>';
+      }
+    }
+
+    // Inicializar BD
+    function inicializarBD() {
+      Swal.fire({
+        title: '¿Inicializar estructura de Google Sheets?',
+        text: 'Se crearán las hojas y catálogos con datos iniciales de la UAT CUTM Sur.',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, inicializar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          if (typeof google !== "undefined" && google.script && google.script.run) {
+            google.script.run
+              .withSuccessHandler(res => Swal.fire('Éxito', res.mensaje, 'success'))
+              .inicializarBaseDatos();
+          } else {
+            Swal.fire('Modo Demo', 'Estructura lista para vincular a Google Drive.', 'success');
+          }
+        }
+      });
+    }
+
+    // Simulación local para preview
+    function simularBusquedaPlaca(placa) {
+      if (placa.includes('123')) {
+        procesarBusquedaPlaca({
+          encontrado: true,
+          placas: placa,
+          tipoUsuario: 'Docente',
+          nombreCompleto: 'Dr. Juan Carlos Pérez',
+          marcaModelo: 'Honda Civic Blanco',
+          dependencia: 'Facultad de Ingeniería Tampico (F1)'
+        });
+      } else {
+        procesarBusquedaPlaca({ encontrado: false, placas: placa });
+      }
+    }
+  </script>
+</body>
+</html>
