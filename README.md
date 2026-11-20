@@ -37,38 +37,14 @@ Sustituye por completo el uso de libretas de papel tradicionales, reduciendo el 
 
 ---
 
-## 🖼️ Capturas de Pantalla del Sistema
+## 📁 Archivos del Código Fuente
 
-### 1. Aplicación Web Responsiva para Casetas (Google Apps Script)
-![Web App Caseta](assets/captura_webapp.png)
-
-### 2. Base de Datos Centralizada y Normalizada (Google Sheets)
-![Google Sheets](assets/captura_sheets.png)
-
-### 3. Aplicación Móvil Nativa para Rondines (Google AppSheet)
-![AppSheet Movil](assets/captura_appsheet.png)
-
-### 4. Entorno de Desarrollo y Código Fuente (Apps Script)
-![Google Apps Script](assets/captura_apps_script.png)
+* **`Code.gs`**: Backend en Google Apps Script (APIs de persistencia, control de concurrencia, validación de placas, reportes y bitácora de auditoría).
+* **`Index.html`**: Frontend responsivo completo (HTML5, TailwindCSS, Chart.js, SweetAlert2) con el diseño y paleta institucional de la UAT.
 
 ---
 
-## 📁 Estructura del Repositorio
-
-```text
-├── Code.gs                     # Backend en Google Apps Script (APIs, persistencia, validación, auditoría)
-├── Index.html                  # Frontend Web App (HTML5, TailwindCSS/Bootstrap, Chart.js)
-├── DATABASE_SCHEMA.md          # Arquitectura relacional de datos y estructura de Google Sheets
-├── REQUISITOS_IEEE830.md       # Especificación formal de requisitos bajo IEEE 830, ISO 29148 e ISO 25010
-├── MANUAL_USUARIO.md           # Manual de operación para guardias de caseta y supervisores
-├── DECLARACION_USO_IA.md       # Apartado de transparencia y reporte de porcentajes de uso de IA (5%)
-├── GUION_VIDEO_DEMOSTRATIVO.md # Guión estructurado segundo a segundo para el video oficial
-└── assets/                     # Capturas de pantalla y evidencias visuales del sistema
-```
-
----
-
-## 🚀 Guía de Despliegue Rápido en Google Workspace
+## 🚀 Guía de Despliegue en Google Workspace
 
 1. **Crear Hoja de Cálculo en Google Sheets:**
    * Entra a [Google Drive](https://drive.google.com) y crea una nueva hoja de cálculo titulada `Control de Acceso Vehicular - UAT CUTM Sur`.
@@ -84,14 +60,6 @@ Sustituye por completo el uso de libretas de papel tradicionales, reduciendo el 
    * Tipo: **Aplicación web**.
    * Acceso: **Cualquier usuario**.
    * Haz clic en **Implementar** y obtendrás la URL funcional.
-
----
-
-## 💡 Innovación: Ecosistema Híbrido y Códigos QR
-
-* **Doble Interfaz Coordinada:** Web App en Apps Script para las computadoras fijas de caseta + AppSheet para celulares en patrullaje perimetral.
-* **Escaneo de Código QR:** Permite validar credenciales vehiculares digitales con cámara móvil en menos de 2 segundos.
-* **Desacoplamiento Inter-Caseta:** Un conductor puede entrar por Caseta 1 y salir por Caseta 3; el sistema detecta su egreso y calcula automáticamente los minutos de permanencia.
 
 ---
 
